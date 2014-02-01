@@ -156,6 +156,7 @@ date:       1 February 2014
 
 [|Dictionary|]:             http://vimdoc.sourceforge.net/htmldoc/eval.html#Dictionary
 [|gr|]:                     http://vimdoc.sourceforge.net/htmldoc/change.html#gr
+[|:inoremap|]:              http://vimdoc.sourceforge.net/htmldoc/map.html#mapmode-i
 [|key-mapping|]:            http://vimdoc.sourceforge.net/htmldoc/map.html#mapping
 ['keymap']:                 http://vimdoc.sourceforge.net/htmldoc/options.html#%27keymap%27
 [|g:mapkeymap|]:            #gmapkeymap
@@ -165,11 +166,11 @@ date:       1 February 2014
 [|:MapSetKeymapFromDict|]:  #mapsetkeymapfromdict
 [|:MapToggleKeymap|]:       #maptogglekeymap
 [|mbyte-keymap|]:           http://vimdoc.sourceforge.net/htmldoc/mbyte.html#mbyte-keymap
+[|:nnoremap|]:              http://vimdoc.sourceforge.net/htmldoc/map.html#mapmode-n
 [|:NoKeymap|]:              #nokeymap
 [|b:prevkeymap]:            #bprevkeymap
 [|:SetKeymap|]:             #setkeymap
 [|g:stashmapkeymap|]:       #gstashmapkeymap
 [|:ToggleKeymap|]:          #togglekeymap
 [|.vimrc|]:                 http://vimdoc.sourceforge.net/htmldoc/starting.html#_vimrc
-
 
