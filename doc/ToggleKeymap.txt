@@ -10,7 +10,7 @@ This is a Vim plugin to simplify work with multiple [keymap files][|mbyte- keyma
 1.  [Define some mappings][|:MapSetKeymap|] to [set the value of 'keymap'][|:SetKeymap|] while stashing its value in a [variable][|b:prevkeymap], 
 2.  [Define mappings][|:MapToggleKeymap|] to [toggle 'keymap' back to its previous value][|:ToggleKeymap|] while stashing the current value of 'keymap' instead.
 3.  [Also define mappings][|:MapNoKeymap|] to [set 'keymap' to an empty string][|:NoKeymap|] to not use any keymap file, while stashing the previous value of 'keymap'.
-4.  [Define a |Dictionary| variable in your .vimrc][|g:mapkeymap|] to [batch define |:MapSetKeymap| mappings at startup][|MapSetKeymapFromDict()|] with less typing!
+4.  [Define a |Dictionary| variable in your .vimrc][|g:mapkeymap|] to [batch define |:MapSetKeymap| mappings at startup][|ToggleKeymap#MapSetKeymapFromDict()|] with less typing!
 
 *ToggleKeymap-commands*
 =======================
@@ -34,7 +34,7 @@ It is not possible to execute the [|:SetKeymap|][] command with an empty argumen
 *:ToggleKeymap*
 ---------------
 
-Provided you set the current value of ['keymap'][] with [|:SetKeymap|][] or [|:ToggleKeymap|][], or through a mapping created with [|:MapSetKeymap|][], [|:MapToggleKeymap|][] or [|MapSetKeymapFromDict()|][] this will toggle back and forth between the current and previous value of 'keymap' -- even if the previous value was empty.
+Provided you set the current value of ['keymap'][] with [|:SetKeymap|][] or [|:ToggleKeymap|][], or through a mapping created with [|:MapSetKeymap|][], [|:MapToggleKeymap|][] or [|ToggleKeymap#MapSetKeymapFromDict()|][] this will toggle back and forth between the current and previous value of 'keymap' -- even if the previous value was empty.
 
 *:MapSetKeymap*
 ---------------
@@ -58,10 +58,21 @@ This command takes one argument: the key or key combination to [map][|key-mappin
 This command exists for the same reason as the [|:NoKeymap|][] command and relates to [|:MapSetKeymap|][] as |:NoKeymap| relates to [|:SetKeymap|][]; it calls calls the script-local function which |:MapSetKeymap| calls, with {key-to-map} as first argument and an empty string as second argument, for you.
 
 
-*ToggleKeymap-public-functions*
+*ToggleKeymap-autoload-functions*
 ===============================
 
-*MapSetKeymapFromDict()*
+Most of the commands listed above have corresponding [|autoload|][] functions which can be called with similar arguments. As you can see the command versions are mostly there to save on typing:
+
+    Command                       Function
+    ----------------------------  ------------------------------------
+    :SetKeymap mapname            ToggleKeymap#SetKeymap(mapname)
+    :ToggleKeymap                 ToggleKeymap#ToggleKeymap()
+    :MapSetKeymap key name        ToggleKeymap#MapSetKeymap(key, name)
+    :MapToggleKeymap key          ToggleKeymap#MapToggleKeymap(key)
+
+Additionally there is one function which can't have a corresponding command because its argument is not a string:
+
+*ToggleKeymap#MapSetKeymapFromDict()*
 -----------------------
 
 This function takes a single argument: a [|Dictionary|][]. An error message will be given if the argument is _not_ a Dictionary.
@@ -73,7 +84,7 @@ This function will call the same script-local function as [|:MapSetKeymap|][] ca
 *MapSetKeymap-modifying-variables*
 ==================================
 
-There are three global variables which you can use to modify the behavior of [|:MapSetKeymap|][] (and [|MapSetKeymapFromDict()|][]):
+There are three global variables which you can use to modify the behavior of [|:MapSetKeymap|][] (and [|ToggleKeymap#MapSetKeymapFromDict()|][]):
 
 *g:stashmapkeymap* 
 -------------------
@@ -82,21 +93,21 @@ If set to a true value [|:MapSetKeymap|][] will add its arguments as a new `key 
 
     :put =string(g:mapkeymap)
 
-to print g:mapkeymap to your .vimrc to redefine g:mapkeymap itself(!) or define a new set of arguments to [|MapSetKeymapFromDict()|][] to use for example when loading a certain filetype.
+to print g:mapkeymap to your .vimrc to redefine g:mapkeymap itself(!) or define a new set of arguments to [|ToggleKeymap#MapSetKeymapFromDict()|][] to use for example when loading a certain filetype.
 
 
 *g:mapkeymap*
 -------------
 
-If the variable |g:stashmapkeymap| exists and has a true value then every time [|:MapSetKeymap|][] is called (including when it is called by [|MapSetKeymapFromDict()|][]) its two arguments are saved as a `key : value` pair in the global variable |g:mapkeymap| (which thus must be a [|Dictionary|][], and is created if it doesn't already exist). This allows you to later use the command `:put =string(g:mapkeymap)` to write it to a script file (probably your [|.vimrc|][]) so that you can use it as argument to [|MapSetKeymapFromDict()|][] in your script.
+If the variable |g:stashmapkeymap| exists and has a true value then every time [|:MapSetKeymap|][] is called (including when it is called by [|ToggleKeymap#MapSetKeymapFromDict()|][]) its two arguments are saved as a `key : value` pair in the global variable |g:mapkeymap| (which thus must be a [|Dictionary|][], and is created if it doesn't already exist). This allows you to later use the command `:put =string(g:mapkeymap)` to write it to a script file (probably your [|.vimrc|][]) so that you can use it as argument to [|ToggleKeymap#MapSetKeymapFromDict()|][] in your script.
 
-You can of course write one |:MapSetKeymap| command for every keymap you use:
+You can of course write one function call command for every keymap you use:
 
-    :MapNoKeymap    <LocalLeader>k0     
-    :MapSetKeymap   <LocalLeader>ka     accents
-    :MapSetKeymap   <LocalLeader>kg     greek
-    :MapSetKeymap   <LocalLeader>kp     pinyin
-    :MapSetKeymap   <LocalLeader>kr     russian-yawerty
+    :call ToggleKeymap#MapNoKeymap('<LocalLeader>k0')     
+    :call ToggleKeymap#MapSetKeymap('<LocalLeader>ka', 'accents')
+    :call ToggleKeymap#MapSetKeymap('<LocalLeader>kg', 'greek')
+    :call ToggleKeymap#MapSetKeymap('<LocalLeader>kp', 'pinyin')
+    :call ToggleKeymap#MapSetKeymap('<LocalLeader>kr', 'russian-yawerty')
 
 but this is a lot of typing, but if you are a person likely to use several languages and scripts in the same document keymaps is a limited domain where you are likely to define a bunch of mappings on a similar pattern. What if you instead of the above could do this to achieve the same effect:
 
@@ -109,7 +120,7 @@ but this is a lot of typing, but if you are a person likely to use several langu
         \    'p'  :  'pinyin',
         \    'r'  :  'russian-yawerty',
         \ }
-    :call MapSetKeymapFromDict(g:mapkeymap)
+    :call ToggleKeymap#MapSetKeymapFromDict(g:mapkeymap)
 
 Now isn't that much more readable? :-)
 
@@ -123,13 +134,14 @@ If you are like me you want to put in comments there as well, which makes for _v
         \   's' : 'sohlob',   " Accented letters as needed in the Sohlob project
         \   'x' : 'bxs',      " Modified CXS phonetic characters keymap
         \ }
-    :call MapSetKeymapFromDict(g:mapkeymap)
+    :call ToggleKeymap#MapSetKeymapFromDict(g:mapkeymap)
+    :call ToggleKeymap#MapToggleKeymap(<F11><F11>)
 
 
 *g:mapkeymapprefix*
 -------------------
 
-If this variable exists its value will be automatically prepended to every [|key-mapping|][] defined with [|:MapSetKeymap|][] or [|MapSetKeymapFromDict()|][].
+If this variable exists its value will be automatically prepended to every [|key-mapping|][] defined with [|:MapSetKeymap|][] or [|ToggleKeymap#MapSetKeymapFromDict()|][].
 
 Suppose you execute the command
 
@@ -152,23 +164,25 @@ author:     Benct Philip Jonsson <bpjonsson@gmail.com>
 date:       1 February 2014
 ...
 
-[|Dictionary|]:             http://vimdoc.sourceforge.net/htmldoc/eval.html#Dictionary
-[|gr|]:                     http://vimdoc.sourceforge.net/htmldoc/change.html#gr
-[|:inoremap|]:              http://vimdoc.sourceforge.net/htmldoc/map.html#mapmode-i
-[|key-mapping|]:            http://vimdoc.sourceforge.net/htmldoc/map.html#mapping
-['keymap']:                 http://vimdoc.sourceforge.net/htmldoc/options.html#%27keymap%27
-[|g:mapkeymap|]:            #gmapkeymap
-[|g:mapkeymapprefix|]:      #gmapkeymapprefix
-[|:MapNoKeymap|]:           #mapnokeymap
-[|:MapSetKeymap|]:          #mapsetkeymap
-[|MapSetKeymapFromDict()|]:  #mapsetkeymapfromdict
-[|:MapToggleKeymap|]:       #maptogglekeymap
-[|mbyte-keymap|]:           http://vimdoc.sourceforge.net/htmldoc/mbyte.html#mbyte-keymap
-[|:nnoremap|]:              http://vimdoc.sourceforge.net/htmldoc/map.html#mapmode-n
-[|:NoKeymap|]:              #nokeymap
-[|b:prevkeymap]:            #bprevkeymap
-[|:SetKeymap|]:             #setkeymap
-[|g:stashmapkeymap|]:       #gstashmapkeymap
-[|:ToggleKeymap|]:          #togglekeymap
-[|.vimrc|]:                 http://vimdoc.sourceforge.net/htmldoc/starting.html#_vimrc
+[|autoload|]:                             http://vimdoc.sourceforge.net/htmldoc/eval.html#autoload
+[|Dictionary|]:                           http://vimdoc.sourceforge.net/htmldoc/eval.html#Dictionary
+[|gr|]:                                   http://vimdoc.sourceforge.net/htmldoc/change.html#gr
+[|:inoremap|]:                            http://vimdoc.sourceforge.net/htmldoc/map.html#mapmode-i
+[|key-mapping|]:                          http://vimdoc.sourceforge.net/htmldoc/map.html#mapping
+['keymap']:                               http://vimdoc.sourceforge.net/htmldoc/options.html#%27keymap%27
+[|g:mapkeymap|]:                          #gmapkeymap
+[|g:mapkeymapprefix|]:                    #gmapkeymapprefix
+[|:MapNoKeymap|]:                         #mapnokeymap
+[|:MapSetKeymap|]:                        #mapsetkeymap
+[|ToggleKeymap#MapSetKeymapFromDict()|]:  #mapsetkeymapfromdict
+[|:MapToggleKeymap|]:                     #maptogglekeymap
+[|mbyte-keymap|]:                         http://vimdoc.sourceforge.net/htmldoc/mbyte.html#mbyte-keymap
+[|:nnoremap|]:                            http://vimdoc.sourceforge.net/htmldoc/map.html#mapmode-n
+[|:NoKeymap|]:                            #nokeymap
+[|b:prevkeymap]:                          #bprevkeymap
+[|:SetKeymap|]:                           #setkeymap
+[|g:stashmapkeymap|]:                     #gstashmapkeymap
+[|:ToggleKeymap|]:                        #togglekeymap
+[|.vimrc|]:                               http://vimdoc.sourceforge.net/htmldoc/starting.html#_vimrc
 
+<!-- vim: set tw=0: -->
