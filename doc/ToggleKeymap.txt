@@ -1,4 +1,4 @@
-*ToggleKeymap.txt* Last change 21 January 2014
+*ToggleKeymap.txt* Last change 1 February 2014
 
 [This document is formatted as a markdown file _and_ as a vim helpfile. If viewing from within vim, set ft=help to view it as a helpfile, and set ft=pandoc to view it as a (pandoc) markdown file.]
 
@@ -151,8 +151,7 @@ TODO Complete documentation
 ---
 title:      ToggleKeymap.vim - a Vim plugin for users of multiple keymaps.
 author:     Benct Philip Jonsson <bpjonsson@gmail.com>
-date:       21 January 2014
-baseurl:    http://vimdoc.sourceforge.net/htmldoc/
+date:       1 February 2014
 ...
 
 [|Dictionary|]:             http://vimdoc.sourceforge.net/htmldoc/eval.html#Dictionary
