@@ -1,0 +1,176 @@
+*ToggleKeymap.txt* Last change 21 January 2014
+
+[This document is formatted as a markdown file _and_ as a vim helpfile. If viewing from within vim, set ft=help to view it as a helpfile, and set ft=pandoc to view it as a (pandoc) markdown file.]
+
+*ToggleKeymap* - go back to the previously used ['keymap'][] value
+==================================================================
+
+This is a Vim plugin to simplify work with multiple [keymap files][|mbyte- keymap|] by providing commands to manipulate the buffer-local value of ['keymap'][] (thus activating another keymap file) while stashing the previous value:
+
+1.  [Define some mappings][|:MapSetKeymap|] to [set the value of 'keymap'][|:SetKeymap|] while stashing its value in a [variable][|b:prevkeymap], 
+2.  [Define mappings][|:MapToggleKeymap|] to [toggle 'keymap' back to its previous value][|:ToggleKeymap|] while stashing the current value of 'keymap' instead.
+3.  [Also define mappings][|:MapNoKeymap|] to [set 'keymap' to an empty string][|:NoKeymap|] to not use any keymap file, while stashing the previous value of 'keymap'.
+4.  [Define a |Dictionary| variable in your .vimrc][|g:mapkeymap|] to [batch define |:MapSetKeymap| mappings at startup][|:MapSetKeymapFromDict|] with less typing!
+
+*ToggleKeymap-commands*
+=======================
+
+This plugin defines the following commands:
+
+*:SetKeymap*
+------------
+
+Takes one argument: the new value to assign to ['keymap'][]:
+
+    :SetKeymap {new-keymap-value}
+
+Set the value of ['keymap'][]. The difference from `:setl keymap=mapname` is that it stashes the previous value of 'keymap' in the variable *b:prevkeymap* so that you can use [|:ToggleKeymap|][] or a mapping created with [|:MapToggleKeymap|][] to switch back and forth between the two values.
+
+*:NoKeymap*
+-----------
+
+It is not possible to execute the [|:SetKeymap|][] command with an empty argument, so this calls the script-local function which |:SetKeymap| calls, with an empty string as argument, for you.
+
+*:ToggleKeymap*
+---------------
+
+Provided you set the current value of ['keymap'][] with [|:SetKeymap|][] or [|:ToggleKeymap|][], or through a mapping created with [|:MapSetKeymap|][], [|:MapToggleKeymap|][] or [|:MapSetKeymapFromDict|][] this will toggle back and forth between the current and previous value of 'keymap' -- even if the previous value was empty.
+
+*:MapSetKeymap*
+---------------
+
+This command takes two arguments:
+
+1.  The key or key combination to [map][|key-mapping|].
+2.  The value which the mapping shall set set ['keymap'][] to.
+
+    :MapSetKeymap {key-to-map} {keymap-value}
+
+Define a [|:SetKeymap|][]-aware [|key-mapping|][] pair (as in [|:nnoremap|][] and [|:inoremap|][]).  It actually defines a pair of key-mappings which call the same function as |:SetKeymap| calls, with {keymap-value} as argument.
+
+*:MapNoKeymap*
+--------------
+
+This command takes one argument: the key or key combination to [map][|key-mapping|].
+
+    :MapNoKeymap {key-to-map}
+
+This command exists for the same reason as the [|:NoKeymap|][] command and relates to [|:MapSetKeymap|][] as |:NoKeymap| relates to [|:SetKeymap|][]; it calls calls the script-local function which |:MapSetKeymap| calls, with {key-to-map} as first argument and an empty string as second argument, for you.
+
+
+*ToggleKeymap-public-functions*
+===============================
+
+*:MapSetKeymapFromDict*
+-----------------------
+
+This function takes a single argument: a [|Dictionary|][]. An error message will be given if the argument is _not_ a Dictionary.
+
+This function will call the same script-local function as [|:MapSetKeymap|][] calls one time for each `key : value` pair in the Dictionary, using the key as the key(s) to map and the value as the ['keymap'][] value to set.
+
+
+
+*MapSetKeymap-modifying-variables*
+==================================
+
+There are three global variables which you can use to modify the behavior of [|:MapSetKeymap|][] (and [|:MapSetKeymapFromDict|][]):
+
+*g:stashmapkeymap* 
+-------------------
+
+*g:mapkeymap*
+-------------
+
+If the variable |g:stashmapkeymap| exists and has a true value then every time [|:MapSetKeymap|][] is called (including when it is called by [|:MapSetKeymapFromDict|][]) its two arguments are saved as a `key : value` pair in the global variable |g:mapkeymap| (which thus must be a [|Dictionary|][], and is created if it doesn't already exist). This allows you to later use the command `:put =string(g:mapkeymap)` to write it to a script file (probably your [|.vimrc|][]) so that you can use it as argument to [|:MapSetKeymapFromDict|][] in your script.
+
+You can of course write one |:MapSetKeymap| command for every keymap you use:
+
+    :MapNoKeymap    <LocalLeader>k0     
+    :MapSetKeymap   <LocalLeader>ka     accents
+    :MapSetKeymap   <LocalLeader>kg     greek
+    :MapSetKeymap   <LocalLeader>kp     pinyin
+    :MapSetKeymap   <LocalLeader>kr     russian-yawerty
+
+but this is a lot of typing, but if you are a person likely to use several languages and scripts in the same document keymaps is a limited domain where you are likely to define a bunch of mappings on a similar pattern. What if you instead of the above could do this to achieve the same effect:
+
+    :let g:mapkeymapprefix = '<LocalLeader>k'
+    :let g:mapkeymap = {
+
+        \    '0'  :  "",
+        \    'a'  :  'accents',
+        \    'g'  :  'greek',
+        \    'p'  :  'pinyin',
+        \    'r'  :  'russian-yawerty',
+        \ }
+    :MapSetKeymapFromDict(g:mapkeymap)
+
+Now isn't that much more readable? :-)
+
+If you are like me you want to put in comments there as well, which makes for _very_ long lines without the dict trick!
+
+    :let g:mapkeymapprefix = '<F11>'
+    :let g:mapkeymap = {
+        \   '0' : "",         " No keymap at all
+        \   'g' : 'bpjgreek', " Beta Code drools! ;-)
+        \   'l' : 'latin',    " Hochpotch mappings for Unicode 'Latin' letters and accents
+        \   's' : 'sohlob',   " Accented letters as needed in the Sohlob project
+        \   'x' : 'bxs',      " Modified CXS phonetic characters keymap
+        \ }
+    :MapSetKeymapFromDict(g:mapkeymap)
+
+
+Later you can use
+
+    :put =string(g:mapkeymap)
+
+to print g:mapkeymap to your .vimrc to redefine g:mapkeymap!
+
+
+*g:mapkeymapprefix*
+-------------------
+
+If this variable exists its value will be automatically prepended to every [|key-mapping|][] defined with [|:MapSetKeymap|][] or [|:MapSetKeymapFromDict|][].
+
+Suppose you execute the command
+
+    :MapSetKeymap gr greek
+
+With |g:mapkeymapprefix| _unset_ you will clobber the builtin [|gr|][], which you probably don't want to do.  One alternative is to change the above command to something like
+
+    :MapSetKeymap <LocalLeader>kgr greek
+
+but again that's a lot of typing!
+
+## *
+
+TODO Complete documentation
+
+<!-- End of document -->
+========================
+
+---
+title:      ToggleKeymap.vim - a Vim plugin for users of multiple keymaps.
+author:     Benct Philip Jonsson <bpjonsson@gmail.com>
+date:       21 January 2014
+baseurl:    http://vimdoc.sourceforge.net/htmldoc/
+...
+
+[|Dictionary|]:             http://vimdoc.sourceforge.net/htmldoc/eval.html#Dictionary
+[|gr|]:                     http://vimdoc.sourceforge.net/htmldoc/change.html#gr
+[|key-mapping|]:            http://vimdoc.sourceforge.net/htmldoc/map.html#mapping
+['keymap']:                 http://vimdoc.sourceforge.net/htmldoc/options.html#%27keymap%27
+[|g:mapkeymap|]:            #gmapkeymap
+[|g:mapkeymapprefix|]:      #gmapkeymapprefix
+[|:MapNoKeymap|]:           #mapnokeymap
+[|:MapSetKeymap|]:          #mapsetkeymap
+[|:MapSetKeymapFromDict|]:  #mapsetkeymapfromdict
+[|:MapToggleKeymap|]:       #maptogglekeymap
+[|mbyte-keymap|]:           http://vimdoc.sourceforge.net/htmldoc/mbyte.html#mbyte-keymap
+[|:NoKeymap|]:              #nokeymap
+[|b:prevkeymap]:            #bprevkeymap
+[|:SetKeymap|]:             #setkeymap
+[|g:stashmapkeymap|]:       #gstashmapkeymap
+[|:ToggleKeymap|]:          #togglekeymap
+[|.vimrc|]:                 http://vimdoc.sourceforge.net/htmldoc/starting.html#_vimrc
+
+
