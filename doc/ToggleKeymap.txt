@@ -10,7 +10,7 @@ This is a Vim plugin to simplify work with multiple [keymap files][|mbyte- keyma
 1.  [Define some mappings][|:MapSetKeymap|] to [set the value of 'keymap'][|:SetKeymap|] while stashing its value in a [variable][|b:prevkeymap], 
 2.  [Define mappings][|:MapToggleKeymap|] to [toggle 'keymap' back to its previous value][|:ToggleKeymap|] while stashing the current value of 'keymap' instead.
 3.  [Also define mappings][|:MapNoKeymap|] to [set 'keymap' to an empty string][|:NoKeymap|] to not use any keymap file, while stashing the previous value of 'keymap'.
-4.  [Define a |Dictionary| variable in your .vimrc][|g:mapkeymap|] to [batch define |:MapSetKeymap| mappings at startup][|:MapSetKeymapFromDict|] with less typing!
+4.  [Define a |Dictionary| variable in your .vimrc][|g:mapkeymap|] to [batch define |:MapSetKeymap| mappings at startup][|MapSetKeymapFromDict()|] with less typing!
 
 *ToggleKeymap-commands*
 =======================
@@ -34,7 +34,7 @@ It is not possible to execute the [|:SetKeymap|][] command with an empty argumen
 *:ToggleKeymap*
 ---------------
 
-Provided you set the current value of ['keymap'][] with [|:SetKeymap|][] or [|:ToggleKeymap|][], or through a mapping created with [|:MapSetKeymap|][], [|:MapToggleKeymap|][] or [|:MapSetKeymapFromDict|][] this will toggle back and forth between the current and previous value of 'keymap' -- even if the previous value was empty.
+Provided you set the current value of ['keymap'][] with [|:SetKeymap|][] or [|:ToggleKeymap|][], or through a mapping created with [|:MapSetKeymap|][], [|:MapToggleKeymap|][] or [|MapSetKeymapFromDict()|][] this will toggle back and forth between the current and previous value of 'keymap' -- even if the previous value was empty.
 
 *:MapSetKeymap*
 ---------------
@@ -61,7 +61,7 @@ This command exists for the same reason as the [|:NoKeymap|][] command and relat
 *ToggleKeymap-public-functions*
 ===============================
 
-*:MapSetKeymapFromDict*
+*MapSetKeymapFromDict()*
 -----------------------
 
 This function takes a single argument: a [|Dictionary|][]. An error message will be given if the argument is _not_ a Dictionary.
@@ -73,15 +73,22 @@ This function will call the same script-local function as [|:MapSetKeymap|][] ca
 *MapSetKeymap-modifying-variables*
 ==================================
 
-There are three global variables which you can use to modify the behavior of [|:MapSetKeymap|][] (and [|:MapSetKeymapFromDict|][]):
+There are three global variables which you can use to modify the behavior of [|:MapSetKeymap|][] (and [|MapSetKeymapFromDict()|][]):
 
 *g:stashmapkeymap* 
 -------------------
 
+If set to a true value [|:MapSetKeymap|][] will add its arguments as a new `key : value` pair to [|g:mapkeymap|][]. Later you can use
+
+    :put =string(g:mapkeymap)
+
+to print g:mapkeymap to your .vimrc to redefine g:mapkeymap itself(!) or define a new set of arguments to [|MapSetKeymapFromDict()|][] to use for example when loading a certain filetype.
+
+
 *g:mapkeymap*
 -------------
 
-If the variable |g:stashmapkeymap| exists and has a true value then every time [|:MapSetKeymap|][] is called (including when it is called by [|:MapSetKeymapFromDict|][]) its two arguments are saved as a `key : value` pair in the global variable |g:mapkeymap| (which thus must be a [|Dictionary|][], and is created if it doesn't already exist). This allows you to later use the command `:put =string(g:mapkeymap)` to write it to a script file (probably your [|.vimrc|][]) so that you can use it as argument to [|:MapSetKeymapFromDict|][] in your script.
+If the variable |g:stashmapkeymap| exists and has a true value then every time [|:MapSetKeymap|][] is called (including when it is called by [|MapSetKeymapFromDict()|][]) its two arguments are saved as a `key : value` pair in the global variable |g:mapkeymap| (which thus must be a [|Dictionary|][], and is created if it doesn't already exist). This allows you to later use the command `:put =string(g:mapkeymap)` to write it to a script file (probably your [|.vimrc|][]) so that you can use it as argument to [|MapSetKeymapFromDict()|][] in your script.
 
 You can of course write one |:MapSetKeymap| command for every keymap you use:
 
@@ -102,7 +109,7 @@ but this is a lot of typing, but if you are a person likely to use several langu
         \    'p'  :  'pinyin',
         \    'r'  :  'russian-yawerty',
         \ }
-    :MapSetKeymapFromDict(g:mapkeymap)
+    :call MapSetKeymapFromDict(g:mapkeymap)
 
 Now isn't that much more readable? :-)
 
@@ -116,20 +123,13 @@ If you are like me you want to put in comments there as well, which makes for _v
         \   's' : 'sohlob',   " Accented letters as needed in the Sohlob project
         \   'x' : 'bxs',      " Modified CXS phonetic characters keymap
         \ }
-    :MapSetKeymapFromDict(g:mapkeymap)
-
-
-Later you can use
-
-    :put =string(g:mapkeymap)
-
-to print g:mapkeymap to your .vimrc to redefine g:mapkeymap!
+    :call MapSetKeymapFromDict(g:mapkeymap)
 
 
 *g:mapkeymapprefix*
 -------------------
 
-If this variable exists its value will be automatically prepended to every [|key-mapping|][] defined with [|:MapSetKeymap|][] or [|:MapSetKeymapFromDict|][].
+If this variable exists its value will be automatically prepended to every [|key-mapping|][] defined with [|:MapSetKeymap|][] or [|MapSetKeymapFromDict()|][].
 
 Suppose you execute the command
 
@@ -140,8 +140,6 @@ With |g:mapkeymapprefix| _unset_ you will clobber the builtin [|gr|][], which yo
     :MapSetKeymap <LocalLeader>kgr greek
 
 but again that's a lot of typing!
-
-## *
 
 TODO Complete documentation
 
@@ -163,7 +161,7 @@ date:       1 February 2014
 [|g:mapkeymapprefix|]:      #gmapkeymapprefix
 [|:MapNoKeymap|]:           #mapnokeymap
 [|:MapSetKeymap|]:          #mapsetkeymap
-[|:MapSetKeymapFromDict|]:  #mapsetkeymapfromdict
+[|MapSetKeymapFromDict()|]:  #mapsetkeymapfromdict
 [|:MapToggleKeymap|]:       #maptogglekeymap
 [|mbyte-keymap|]:           http://vimdoc.sourceforge.net/htmldoc/mbyte.html#mbyte-keymap
 [|:nnoremap|]:              http://vimdoc.sourceforge.net/htmldoc/map.html#mapmode-n
