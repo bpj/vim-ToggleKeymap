@@ -29,7 +29,7 @@ Set the value of ['keymap'][]. The difference from `:setl keymap=mapname` is tha
 *:NoKeymap*
 -----------
 
-It is not possible to execute the [|:SetKeymap|][] command with an empty argument, so this calls the script-local function which |:SetKeymap| calls, with an empty string as argument, for you.
+It is not possible to execute the [|:SetKeymap|][] command with an empty argument, so this calls the autoload function which |:SetKeymap| calls, with an empty string as argument, for you.
 
 *:ToggleKeymap*
 ---------------
@@ -46,7 +46,7 @@ This command takes two arguments:
 
     :MapSetKeymap {key-to-map} {keymap-value}
 
-Define a [|:SetKeymap|][]-aware [|key-mapping|][] pair (as in [|:nnoremap|][] and [|:inoremap|][]).  It actually defines a pair of key-mappings which call the same function as |:SetKeymap| calls, with {keymap-value} as argument.
+Define a [|:SetKeymap|][]-aware [|key-mapping|][] pair (as in [|:nnoremap|][] and [|:inoremap|][]).  It actually defines a pair of key-mappings which call the same autoload function as |:SetKeymap| calls, with {keymap-value} as argument.
 
 *:MapNoKeymap*
 --------------
@@ -55,11 +55,11 @@ This command takes one argument: the key or key combination to [map][|key-mappin
 
     :MapNoKeymap {key-to-map}
 
-This command exists for the same reason as the [|:NoKeymap|][] command and relates to [|:MapSetKeymap|][] as |:NoKeymap| relates to [|:SetKeymap|][]; it calls calls the script-local function which |:MapSetKeymap| calls, with {key-to-map} as first argument and an empty string as second argument, for you.
+This command exists for the same reason as the [|:NoKeymap|][] command and relates to [|:MapSetKeymap|][] as |:NoKeymap| relates to [|:SetKeymap|][]; it calls calls the autoload function which |:MapSetKeymap| calls, with {key-to-map} as first argument and an empty string as second argument, for you.
 
 
 *ToggleKeymap-autoload-functions*
-===============================
+=================================
 
 Most of the commands listed above have corresponding [|autoload|][] functions which can be called with similar arguments. As you can see the command versions are mostly there to save on typing:
 
@@ -73,11 +73,11 @@ Most of the commands listed above have corresponding [|autoload|][] functions wh
 Additionally there is one function which can't have a corresponding command because its argument is not a string:
 
 *ToggleKeymap#MapSetKeymapFromDict()*
------------------------
+-------------------------------------
 
 This function takes a single argument: a [|Dictionary|][]. An error message will be given if the argument is _not_ a Dictionary.
 
-This function will call the same script-local function as [|:MapSetKeymap|][] calls one time for each `key : value` pair in the Dictionary, using the key as the key(s) to map and the value as the ['keymap'][] value to set.
+This function will call the same autoload function as [|:MapSetKeymap|][] calls one time for each `key : value` pair in the Dictionary, using the key as the key(s) to map and the value as the ['keymap'][] value to set.
 
 
 
@@ -101,7 +101,7 @@ to print g:mapkeymap to your .vimrc to redefine g:mapkeymap itself(!) or define 
 
 If the variable |g:stashmapkeymap| exists and has a true value then every time [|:MapSetKeymap|][] is called (including when it is called by [|ToggleKeymap#MapSetKeymapFromDict()|][]) its two arguments are saved as a `key : value` pair in the global variable |g:mapkeymap| (which thus must be a [|Dictionary|][], and is created if it doesn't already exist). This allows you to later use the command `:put =string(g:mapkeymap)` to write it to a script file (probably your [|.vimrc|][]) so that you can use it as argument to [|ToggleKeymap#MapSetKeymapFromDict()|][] in your script.
 
-You can of course write one function call command for every keymap you use:
+You can of course write one autoload function call command for every keymap you use:
 
     :call ToggleKeymap#MapNoKeymap('<LocalLeader>k0')     
     :call ToggleKeymap#MapSetKeymap('<LocalLeader>ka', 'accents')
