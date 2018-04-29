@@ -4,3 +4,4 @@ Its much simplified and improved successor can be found in [the autoload directo
 
 [autoload]: https://github.com/bpj/bpj-vim-keymaps/tree/master/autoload
 [vimkeymaps]: https://github.com/bpj/bpj-vim-keymaps
+ 
